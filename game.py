@@ -36,6 +36,8 @@ class GameLayout:
         #* To edit blocks
         self.rand_blocks:  list = [ [], [] ]
         self.empty_blocks: list = [ [], [] ]
+        
+        self.isLastBlock : bool = False
 
         #! The grid/GAME
         self.layout: str = ""
@@ -54,11 +56,11 @@ class GameLayout:
             self.column_list.append([])
 
             for i in range(self.columns): # Every column in a row
-                if self.rand_blocks != [[],[]] and i in self.rand_blocks[j] :
+                if self.rand_blocks != [[],[]] and i in self.rand_blocks[j]:
                     self.column_list[j].append(self.block) # Add block if is a block slot
                     continue
 
-                if self.empty_blocks != [[],[]] and i in self.empty_blocks[j]:
+                elif self.empty_blocks != [[],[]] and i in self.empty_blocks[j] and self.isLastBlock == False:
                     self.column_list[j].append(self.es) # Add empty slot
                     continue
 
@@ -94,22 +96,31 @@ class GameLayout:
             self.layout += f"{self.borders[0]}{self.str_col}{self.borders[1]}\n"
 
 
-    def set_slots(self, where:list=[0, []], slot:int=0):
+    def set_slots(self, where:list=[0, []]):
         """
         Add blocks on column(s)
         * `where` : Index - 0: int for 1 column - 1: list for one or multiple rows
-        * `slot`  :  0 is block, 1 is empty slot
         """
 
 
         for j in range(self.rows):
             self.rand_blocks.append([])
+
+        self.rand_blocks[where[0]].extend(where[1])
+        self.isLastBlock = True
+    
+    
+    def set_empty(self, where:list=[0,[]]):
+        """
+        Add blocks on column(s)
+        * `where` : Index - 0: int for 1 column - 1: list for one or multiple rows
+        """
+        
+        for j in range(self.rows):
             self.empty_blocks.append([])
 
-        if slot == 0:
-            self.rand_blocks[where[0]].extend(where[1])
-        if slot != 0:
-            self.empty_blocks[where[0]].extend(where[1])
+        self.empty_blocks[where[0]].extend(where[1])
+        self.isLastBlock = False
 
 
     def add_tetro(self, tetro:int=0, x:int=999):
@@ -161,16 +172,19 @@ class GameLayout:
         for j in range(self.rows):
             for i in range(self.columns):
                 if j == slot[1] and i == slot[0]:
-                    self.set_slots([j, [i]], slot=1) # TODO: Add slot remover
+                    self.set_slots([j, [i]]) # TODO: Add slot remover
 
                 if j == move[1] and i == move[0]:
-                    self.set_slots([j, [i]], slot=0)
+                    self.set_slots([j, [i]])
 
 
     def move_slots(self): # TODO: Add this
         pass
 
 
+    def show(self):
+        print(self.generate())
+    
 
     def __str__(self) -> str:
         if self.layout == "":
@@ -229,9 +243,15 @@ def ask():
 
 if __name__ == "__main__":
     tetris = GameLayout(row_num=12, col_num=5)
-
-    tetris.generate()
-    print(tetris)
+    
+    tetris.add_tetro(0)
+    tetris.show()
+    
+    tetris.set_empty([0,[2]])
+    tetris.show()
+    
+    tetris.set_slots([0, [2]])
+    tetris.show()
 
     # TESTIT: Gravity by taking the slot X pos and Then (Y - 1) Will be below's slot's X
 

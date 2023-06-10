@@ -1,7 +1,7 @@
 """ Original Plain Text Tetris Game By @AbdooOwd inspired by Alexey Pijatnov """
 
+#* All this project was all made without ChatGPT, except for a little bit of the code
 
-dev = False
 
 class GameLayout:
 
@@ -30,37 +30,55 @@ class GameLayout:
         self.block: str = slots[1]
         self.borders: list = borders
 
-        self.slotter: str = self.es
-
 
         #* To edit blocks
-        self.rand_blocks:  list = [ [], [] ]
-        self.empty_blocks: list = [ [], [] ]
+        self.block_slots:  list = [ [], [] ]
+        self.empty_slots: list = [ [], [] ]
         
-        self.isLastBlock : bool = False
+        for j in range(self.rows):
+            self.empty_slots.append([])
+            self.block_slots.append([])
+        
+        self.isLastBlock : bool = False # To check if the last placed slot is a block
 
         #! The grid/GAME
         self.layout: str = ""
 
+    def reset_slots(self):
+        #* To edit blocks
+        self.block_slots:  list = [ [], [] ]
+        self.empty_slots: list = [ [], [] ]
+        
+        self.isLastBlock : bool = False # To check if the last placed slot is a block
 
     def generate(self):
         """Generates a Game Board/View/Grid"""
-
-        self.col_slots: list = [] # Obsolete
+        
+        print(f" > 'block_slots' : {self.block_slots}") #! DEV
+        print(f" > 'empty_slots' : {self.empty_slots}")
 
         # Column Storing Stuff
         self.column_list: list = []
 
         for j in range(self.rows):
-            # print(f"\nROW: {j}")
             self.column_list.append([])
+            
+            # Check if 'block_slots' and 'empty_slots' have the same positions
+            for i in range(self.columns):
+                if self.block_slots != [[], []] and self.empty_slots != [[], []] and i <= len(self.block_slots):
+                    if i in self.block_slots[j] and i in self.empty_slots[j]:
+                        if self.block_slots[j].index(i) == self.empty_slots[j].index(i):
+                            if self.isLastBlock == True:
+                                self.empty_slots[j].remove(i)
+                            else:
+                                self.block_slots[j].remove(i)
 
             for i in range(self.columns): # Every column in a row
-                if self.rand_blocks != [[],[]] and i in self.rand_blocks[j]:
+                if self.block_slots != [[],[]] and i in self.block_slots[j]:
                     self.column_list[j].append(self.block) # Add block if is a block slot
                     continue
 
-                elif self.empty_blocks != [[],[]] and i in self.empty_blocks[j] and self.isLastBlock == False:
+                elif self.empty_slots != [[],[]] and i in self.empty_slots[j]:
                     self.column_list[j].append(self.es) # Add empty slot
                     continue
 
@@ -85,7 +103,7 @@ class GameLayout:
 
         self.column_list.clear()
         self.layout = ''
-        self.rand_blocks = []
+        self.block_slots = []
 
         for i in range(self.columns):
             self.column_list.append(self.es)
@@ -102,11 +120,11 @@ class GameLayout:
         * `where` : Index - 0: int for 1 column - 1: list for one or multiple rows
         """
 
-
-        for j in range(self.rows):
-            self.rand_blocks.append([])
-
-        self.rand_blocks[where[0]].extend(where[1])
+        for i in where[1]: #Checks if already in the Array
+            if i in self.block_slots[where[0]]:
+                return
+        
+        self.block_slots[where[0]].extend(where[1])
         self.isLastBlock = True
     
     
@@ -116,10 +134,11 @@ class GameLayout:
         * `where` : Index - 0: int for 1 column - 1: list for one or multiple rows
         """
         
-        for j in range(self.rows):
-            self.empty_blocks.append([])
+        for i in where[1]:
+            if i in self.empty_slots[where[0]]:
+                return
 
-        self.empty_blocks[where[0]].extend(where[1])
+        self.empty_slots[where[0]].extend(where[1])
         self.isLastBlock = False
 
 
@@ -172,7 +191,7 @@ class GameLayout:
         for j in range(self.rows):
             for i in range(self.columns):
                 if j == slot[1] and i == slot[0]:
-                    self.set_slots([j, [i]]) # TODO: Add slot remover
+                    self.set_empty([j, [i]])
 
                 if j == move[1] and i == move[0]:
                     self.set_slots([j, [i]])
@@ -191,53 +210,6 @@ class GameLayout:
             return self.generate()
         else:
             return self.layout
-
-
-# END OF CLASS
-
-def ibra():
-    tetris.set_slots([1, [1,2,3,5,6,7,9,10,11,13,14,15]])
-    tetris.set_slots([2, [2, 5,7, 9,11, 13,15]])
-    tetris.set_slots([3, [2, 5, 6, 9,10, 13,14,15]])
-    tetris.set_slots([4, [2, 5,7, 9,11,13,15]])
-    tetris.set_slots([5, [1,2,3,  5,6,7,  9,11, 13,15 ]])
-
-
-def ask():
-    print("\n  Welcome to TETRIS!")
-    print(" What Would you like to do?")
-    print("- 0: Add slots\n- 1: Add a Tetromino\n- 99: EXIT")
-
-    ans = input("> Your Choice!\n  > ")
-
-    if ans == "99":
-        exit()
-
-    if ans == '0':
-        r = input(" Okay! Please enter the row's number! (Only Numbers please or the game will crash)\n  > ")
-        c = input(" Now please enter the columns numbers (separated by -)\n  > ")
-        c.strip()
-        b = c.split("-")
-        f = []
-        for i in b:
-            f.append(int(i))
-
-        print(f" Alright! Here is the data: '{[int(r), f]}'")
-        print(" Is it correct? Well it is.")
-        print(" Here is the result:\n\n")
-
-        tetris.set_slots([int(r), f])
-    elif ans == "1":
-        print(" Okay! Enter the Tetromino's number!")
-        print(" - 0: 2x2\n - 1: 1x4\n - 2: S\n - 3: 5\n - 4: T")
-        k = input("  > ")
-
-        tetris.add_tetro(tetro=int(k))
-        print(" Here it is!")
-
-
-    tetris.generate()
-    print(tetris)
 
 
 

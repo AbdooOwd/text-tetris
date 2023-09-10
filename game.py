@@ -197,8 +197,6 @@ class GameLayout:
         * `slot` : Indexes -> `0`: X pos - `1`: Y pos
         * `move` : Where to move - Indexes -> `0`: X pos - `1`: Y pos
         """
-        
-        if self.empty_slots
 
         # Remove the block from its current position
         self.set_empty([slot[0], [slot[1]]])

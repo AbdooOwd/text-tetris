@@ -1,4 +1,5 @@
 from time import sleep
+import keyboard
 import os
 
 class GameLayout:
@@ -28,8 +29,23 @@ class GameLayout:
         self.layout: list[list[str]] = []
         self.layout_str: str = ''
 
+        self.temp['gotta_wait'] = True
+
+        keyboard.hook(self.on_key_event)
+
         self.generate()
     
+    def on_key_event(self, e):
+        match e.name:
+            case 'w' | 'z': # rotate (WIP)
+                pass
+            case 'd': # right
+                self.move_smol(self.temp['focused_slot'], 1, 0)
+            case 'q' | 'a': # left
+                self.move_smol(self.temp['focused_slot'], -1, 0)
+            case 's': # down smol
+                # self.temp['gotta_wait'] = False
+                self.move_smol(self.temp['focused_slot'], 0, 1)
 
     def generate(self):
         """Generates the game grid (most important function)"""
@@ -132,7 +148,12 @@ class GameLayout:
         self.move_smol(self.temp['focused_slot'], 0, 1)
         
         self.show()
-        sleep(1)
+
+        # if we gotta wait we wait, else just go vroom
+        if self.temp['gotta_wait']:
+            sleep(1)
+        else:
+            self.temp['gotta_wait'] = True
         self.clear_terminal()
 
 
@@ -142,6 +163,8 @@ class GameLayout:
 
 if __name__ == "__main__":
     tetris = GameLayout()
+
+    tetris.show()
 
     while True:
         tetris.game_step()
